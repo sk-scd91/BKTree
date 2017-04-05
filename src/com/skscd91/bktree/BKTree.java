@@ -140,9 +140,41 @@ public class BKTree<T> extends AbstractSet<T> {
     public Iterator<T> iterator() {
         if (length == 0)
             return Collections.emptyIterator();
-        ArrayList<T> iterable = new ArrayList<>(length);
-        rootNode.collect(iterable);
-        return iterable.iterator();
+        ArrayDeque<Node<T>> nextNodes = new ArrayDeque<>();
+        nextNodes.add(rootNode);
+        return new Iterator<T>() {
+
+            private Node<T> lastNode;
+
+            @Override
+            public boolean hasNext() {
+                return !nextNodes.isEmpty();
+            }
+
+            @Override
+            public T next() {
+                if (!hasNext())
+                    throw new NoSuchElementException();
+                lastNode = nextNodes.poll();
+                for (Map.Entry<?, Node<T>> entry : lastNode.children.entrySet())
+                    nextNodes.add(entry.getValue());
+                return lastNode.item;
+            }
+
+            @Override
+            public void remove() {
+                if (lastNode == null)
+                    throw new IllegalStateException(); // Cannot remove what hasn't been visited.
+                if (!lastNode.children.isEmpty()) {
+                    Node<T> replacementNode = nextNodes.removeLast();
+                    for (int i = lastNode.children.size(); i > 1; i--) // Remove all but first child.
+                        replacementNode = nextNodes.removeLast();
+                    nextNodes.addFirst(replacementNode); // Replace parent in deque.
+                }
+                BKTree.this.remove(lastNode.item);
+                lastNode = null;
+            }
+        };
     }
 
     @Override
@@ -182,12 +214,6 @@ public class BKTree<T> extends AbstractSet<T> {
         public Node(T item) {
             this.item = item;
             this.children = new TreeMap<>();
-        }
-
-        public void collect(Collection<T> collection) {
-            collection.add(item);
-            for (Map.Entry<Integer, Node<T>> child : children.entrySet())
-                child.getValue().collect(collection);
         }
     }
 }
