@@ -3,28 +3,43 @@ package com.skscd91.bktree;
 /**
  * Various distance functions for use with the BKTree.
  *
- * Created by Sean Deneen on 4/4/17.
+ * @author Created by Sean Deneen on 4/4/17.
  */
 public final class DistanceFunctions {
 
     private DistanceFunctions() {}
 
+    /**
+     * @return A case sensitive Hamming Distance function to compare CharSequence objects.
+     */
     public static DistanceFunction<CharSequence> hammingDistance() {
         return hammingDistance(true);
     }
 
+    /**
+     * @param isCaseSensitive Toggle the case sensitivity of the function.
+     * @return A Hamming Distance function to compare CharSequence objects.
+     */
     public static DistanceFunction<CharSequence> hammingDistance(boolean isCaseSensitive) {
         return new HammingDistanceFunction(isCaseSensitive);
     }
 
+    /**
+     * @return A case sensitive Levenshtein Distance function to compare CharSequence objects.
+     */
     public static DistanceFunction<CharSequence> levenshteinDistance() {
         return levenshteinDistance(true);
     }
 
+    /**
+     * @param isCaseSensitive Toggle the case sensitivity of the function.
+     * @return A Levenshtein Distance function to compare CharSequence objects.
+     */
     public static DistanceFunction<CharSequence> levenshteinDistance(boolean isCaseSensitive) {
         return new LevenshteinDistanceFunction(isCaseSensitive);
     }
 
+    // Compare characters a and b for equality, comparing upper case variants when case insensitive.
     private static boolean charEquals(char a, char b, boolean isCaseSensitive) {
         if (isCaseSensitive)
             return a == b;
@@ -32,7 +47,9 @@ public final class DistanceFunctions {
         return Character.toUpperCase(a) == Character.toUpperCase(b);
     }
 
-    // Word distance by letter changes only.
+    /**
+     * Word distance by letter changes only.
+     */
     private static class HammingDistanceFunction implements DistanceFunction<CharSequence> {
 
         private final boolean isCaseSensitive;
@@ -55,7 +72,10 @@ public final class DistanceFunctions {
         }
     }
 
-    // Word distance by letter changes, insertions, and deletions
+    /**
+     * Word distance by letter substitutions, insertions, and deletions
+     * See https://en.wikipedia.org/wiki/Levenshtein_distance#Iterative_with_two_matrix_rows
+     */
     private static class LevenshteinDistanceFunction implements DistanceFunction<CharSequence> {
 
         private final boolean isCaseSensitive;
@@ -86,10 +106,10 @@ public final class DistanceFunctions {
                 nextRow[0] = i;
 
                 for(int j = 1; j <= rightLength; j++) {
-                    int changeDistance = currentRow[j - 1]; // Distance without insertions or deletions.
+                    int subDistance = currentRow[j - 1]; // Distance without insertions or deletions.
                     if (!charEquals(left.charAt(i - 1), right.charAt(j - 1), isCaseSensitive))
-                            changeDistance++;
-                    nextRow[j] = Math.min(Math.min(nextRow[j - 1], currentRow[j]) + 1, changeDistance);
+                            subDistance++; // Add one edit if letters are different.
+                    nextRow[j] = Math.min(Math.min(nextRow[j - 1], currentRow[j]) + 1, subDistance);
                 }
 
                 // Swap rows, use last row for next row.
