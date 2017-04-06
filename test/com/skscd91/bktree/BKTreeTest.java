@@ -2,6 +2,7 @@ package com.skscd91.bktree;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -99,6 +100,19 @@ class BKTreeTest {
             assertEquals(bfsTestStrings[i], s, bfsTestStrings[i] + " is equal");
             i++;
         }
+    }
+
+    @Test
+    void iteratorRemove() {
+        BKTree<CharSequence> tree = new BKTree<>(distFunc);
+        for (String s : testStrings)
+            tree.add(s);
+        Iterator<CharSequence> iterator = tree.iterator();
+        iterator.next(); iterator.next(); iterator.next();
+        iterator.remove();
+        assertEquals("soda", iterator.next());
+        assertEquals("salmon", iterator.next());
+        assertEquals("mole", iterator.next());
     }
 
     @Test
