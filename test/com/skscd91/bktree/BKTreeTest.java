@@ -7,7 +7,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Created by Sean Deneen on 4/5/17.
+ * @author Created by Sean Deneen on 4/5/17.
  */
 class BKTreeTest {
 
@@ -21,7 +21,7 @@ class BKTreeTest {
         assertFalse(tree.add("some"), "add equivalent");
         assertTrue(tree.add("somb"), "add new object");
         assertFalse(tree.add("somb"), "add equivalent again");
-        assertThrows(NullPointerException.class, ()->tree.add(null));
+        assertThrows(NullPointerException.class, () -> tree.add(null)); // Must throw NullpointerException when null.
     }
 
     @Test
@@ -72,9 +72,14 @@ class BKTreeTest {
         assertFalse(tree.remove(new Object()), "non CharSequence not in tree");
 
         assertTrue(tree.remove("same"), "node without children was removed");
+        assertFalse(tree.remove("same"), "last node not in tree (1)");
         assertTrue(tree.remove("soft"), "node with children removed");
+        assertFalse(tree.remove("soft"), "last node not in tree (2)");
         assertEquals(2, tree.search("sort", 2).size(), "confirm node was removed");
-        assertTrue(tree.remove("soft"), "node with children removed");
+        assertTrue(tree.remove("some"), "root node removed");
+        assertFalse(tree.remove("some"), "last node not in tree (3)");
+
+        assertTrue(tree.remove(new StringBuffer("salmon")), "equivalent CharSequence was removed from tree");
     }
 
     @Test
@@ -88,6 +93,7 @@ class BKTreeTest {
         for (CharSequence s : tree) {
             assertTrue(i < bfsTestStrings.length);
             assertEquals(bfsTestStrings[i], s, bfsTestStrings[i] + " is equal");
+            i++;
         }
     }
 

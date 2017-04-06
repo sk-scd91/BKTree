@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Created by Sean Deneen on 4/5/17.
+ * @author Created by Sean Deneen on 4/5/17.
  */
 class DistanceFunctionsTest {
     @Test
