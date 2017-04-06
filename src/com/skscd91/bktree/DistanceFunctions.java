@@ -99,7 +99,7 @@ public final class DistanceFunctions {
             int[] nextRow    = new int[rightLength + 1];
 
             // Fill first row with all edit counts.
-            for (int i = 0; i < rightLength; i++)
+            for (int i = 0; i <= rightLength; i++)
                 currentRow[i] = i;
 
             for (int i = 1; i <= leftLength; i++) {
