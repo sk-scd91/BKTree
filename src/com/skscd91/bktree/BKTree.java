@@ -39,6 +39,8 @@ public class BKTree<T> extends AbstractSet<T> {
      * @return An immutable list of objects, sorted by distance, that approximately match t.
      */
     public List<SearchResult<T>> search(T t, int radius) {
+        if (t == null)
+            return Collections.emptyList();
         ArrayList<SearchResult<T>> searchResults = new ArrayList<>();
         ArrayDeque<Node<T>> nextNodes = new ArrayDeque<>();
         if (rootNode != null)
