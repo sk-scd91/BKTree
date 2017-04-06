@@ -81,7 +81,8 @@ public class BKTree<T> extends AbstractSet<T> {
 
         Node<T> parentNode = rootNode;
         Integer distance;
-        while ((distance = distanceFunction.distance(parentNode.item, t)) != 0) {
+        while ((distance = distanceFunction.distance(parentNode.item, t)) != 0
+                || !t.equals(parentNode.item)) {
             Node<T> childNode = parentNode.children.get(distance);
             if (childNode == null) {
                 parentNode.children.put(distance, new Node<>(t));
@@ -95,8 +96,8 @@ public class BKTree<T> extends AbstractSet<T> {
     }
 
     /**
-     * Check if there is an item equivalent to the given object in the tree.
-     * @param o An object that is potentially of type T and can find an equivalent item in the tree of distance 0.
+     * Check if the given object is in the tree.
+     * @param o An object that is potentially in the tree.
      * @return If the tree contains object o.
      */
     @Override
@@ -106,44 +107,47 @@ public class BKTree<T> extends AbstractSet<T> {
         try {
             @SuppressWarnings("unchecked")
             List<SearchResult<T>> searchList = search((T) o, 0); // Find objects exactly matching o.
-            return searchList.size() > 0; // Return if found.
+            // Search all results of distance 0 to find equal object.
+            for (SearchResult<T> result : searchList) {
+                if (result.getItem().equals(o))
+                    return true;
+            }
+            return false;
         } catch (ClassCastException e) { // If o is not an instance of T, return false.
             return false;
         }
     }
 
     /**
-     * Remove an equivalent object from the tree.
-     * @param o An object potentially of type T that can remove another item of distance 0.
+     * Remove an object from the tree.
+     * @param o An object that is potentially in the tree.
      * @return If an item was removed.
      */
     @Override
     public boolean remove(Object o) {
         if (o == null || rootNode == null)
             return false;
+        if (rootNode.item.equals(o)) {
+            length--;
+            rootNode = replaceNode(rootNode);
+            return true;
+        }
         try {
             @SuppressWarnings("unchecked")
             T t = (T)o;
 
-            Integer lastDistance = distanceFunction.distance(rootNode.item, t);
-            if (lastDistance == 0) { // Replace the root if its item is equivalent.
-                length--;
-                rootNode = replaceNode(rootNode);
-                return true;
-            }
-
             // Repeat until no matching child is found.
             for (Node<T> parentNode = rootNode, childNode; parentNode != null; parentNode = childNode) {
-                childNode = parentNode.children.get(lastDistance);
-                int distance = (childNode == null) ? -1 : distanceFunction.distance(childNode.item, t);
-                if (distance == 0) { // If a matching child is found, remove the child.
+                int distance = distanceFunction.distance(parentNode.item, t);
+                childNode = parentNode.children.get(distance);
+
+                if (childNode != null && childNode.item.equals(t)) { // If a matching child is found, remove the child.
                     length--;
-                    childNode = replaceNode(parentNode.children.remove(lastDistance));
+                    childNode = replaceNode(parentNode.children.remove(distance));
                     if (childNode != null) // If there are descendants, add its replacement to the parent.
-                        parentNode.children.put(lastDistance, childNode);
+                        parentNode.children.put(distance, childNode);
                     return true;
                 }
-                lastDistance = distance;
             }
 
             return false; // No items to remove.

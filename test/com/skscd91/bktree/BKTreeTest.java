@@ -19,6 +19,7 @@ class BKTreeTest {
         BKTree<CharSequence> tree = new BKTree<>(distFunc);
         assertTrue(tree.add("some"), "first add");
         assertFalse(tree.add("some"), "add equivalent");
+        assertTrue(tree.add(new StringBuffer("some")), "can add other CharSequence with same content");
         assertTrue(tree.add("somb"), "add new object");
         assertFalse(tree.add("somb"), "add equivalent again");
         assertThrows(NullPointerException.class, () -> tree.add(null)); // Must throw NullpointerException when null.
@@ -44,6 +45,9 @@ class BKTreeTest {
             assertEquals("some", results.get(2).getItem());
         }
         assertTrue(tree.search(null, 2).isEmpty(), "no search when t is null");
+
+        tree.add(new StringBuffer("some"));
+        assertEquals(4, tree.search("sort", 2).size(), "different CharSequences are different items");
     }
 
     @Test
@@ -54,7 +58,7 @@ class BKTreeTest {
             tree.add(s);
         for (String s : testStrings) {
             assertTrue(tree.contains(s), s + " is in tree");
-            assertTrue(tree.contains(new StringBuffer(s)), s + " equivalent CharSequence is in tree");
+            assertFalse(tree.contains(new StringBuffer(s)), "equivalent CharSequence is not in tree");
         }
         assertFalse(tree.contains("sort"), "sort not in tree");
         assertFalse(tree.contains(null), "null not in tree");
@@ -79,7 +83,7 @@ class BKTreeTest {
         assertTrue(tree.remove("some"), "root node removed");
         assertFalse(tree.remove("some"), "last node not in tree (3)");
 
-        assertTrue(tree.remove(new StringBuffer("salmon")), "equivalent CharSequence was removed from tree");
+        assertFalse(tree.remove(new StringBuffer("salmon")), "equivalent CharSequence was not removed from tree");
     }
 
     @Test
