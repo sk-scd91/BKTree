@@ -26,10 +26,8 @@ class DistanceFunctionsTest {
     void hammingDistance() {
         DistanceFunction<CharSequence> hammingDistance = DistanceFunctions.hammingDistance();
         assertEquals(1, hammingDistance.distance("same","some"), "'same' and 'some'");
-        assertEquals(1, hammingDistance.distance("same", "sam"), "'same' and 'sam");
-        assertEquals(1, hammingDistance.distance("sam", "same"), "'sam' and 'same");
+        assertThrows(IllegalArgumentException.class, () -> hammingDistance.distance("same", "sam"));
         assertEquals(4, hammingDistance.distance("same", "abcd"), "'same' and 'abcd'");
-        assertEquals(9, hammingDistance.distance("same", "different"), "'same' and 'different'");
     }
 
     @Test

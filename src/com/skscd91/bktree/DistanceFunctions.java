@@ -60,10 +60,11 @@ public final class DistanceFunctions {
 
         @Override
         public int distance(CharSequence left, CharSequence right) {
-            int length = Math.min(left.length(), right.length());
-            int wordDistance = Math.abs(left.length() - right.length()); // Treat size difference as blank characters.
+            if (left.length() != right.length())
+                throw new IllegalArgumentException(left + " and " + right + " are not different lengths");
+            int wordDistance = 0;
 
-            for (int i = 0; i < length; i++) {
+            for (int i = 0; i < left.length(); i++) {
                 if (!charEquals(left.charAt(i), right.charAt(i), isCaseSensitive))
                     wordDistance++;
             }
