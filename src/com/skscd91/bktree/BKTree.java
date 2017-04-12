@@ -20,6 +20,7 @@ public class BKTree<T> extends AbstractSet<T> {
     private final DistanceFunction<T> distanceFunction;
     private Node<T> rootNode;
     private int length;
+    private int modCount; // Modification count for fail-fast iterator.
 
     /**
      * @param distanceFunction A function that computes the distance between two objects of type T.
@@ -30,6 +31,7 @@ public class BKTree<T> extends AbstractSet<T> {
 
         this.distanceFunction = distanceFunction;
         length = 0;
+        modCount = 0;
     }
 
     /**
@@ -76,6 +78,7 @@ public class BKTree<T> extends AbstractSet<T> {
         if (rootNode == null) {
             rootNode = new Node<>(t);
             length = 1;
+            modCount++; // Modified tree by adding root.
             return true;
         }
 
@@ -87,6 +90,7 @@ public class BKTree<T> extends AbstractSet<T> {
             if (childNode == null) {
                 parentNode.children.put(distance, new Node<>(t));
                 length++;
+                modCount++; // Modified tree by adding a child.
                 return true;
             }
             parentNode = childNode;
@@ -162,6 +166,7 @@ public class BKTree<T> extends AbstractSet<T> {
      * @return The replacement node, or null if oldNode has no children.
      */
     private Node<T> replaceNode(Node<T> oldNode) {
+        modCount++; // Will modify tree when node is replaced.
         Iterator<Node<T>> entries = oldNode.children.values().iterator();
         if (!entries.hasNext()) // if the old node has no children, replace with null.
             return null;
@@ -194,6 +199,7 @@ public class BKTree<T> extends AbstractSet<T> {
         return new Iterator<T>() {
 
             private Node<T> lastNode;
+            private int itModCount = modCount;
 
             @Override
             public boolean hasNext() {
@@ -204,6 +210,7 @@ public class BKTree<T> extends AbstractSet<T> {
             public T next() {
                 if (!hasNext())
                     throw new NoSuchElementException();
+                ensureNotModified(); // Fail if modified outside remove.
                 lastNode = nextNodes.poll();
                 nextNodes.addAll(lastNode.children.values());
                 return lastNode.item;
@@ -213,6 +220,7 @@ public class BKTree<T> extends AbstractSet<T> {
             public void remove() {
                 if (lastNode == null)
                     throw new IllegalStateException(); // Cannot remove what hasn't been visited.
+                ensureNotModified();
                 if (!lastNode.children.isEmpty()) {
                     Node<T> replacementNode = nextNodes.removeLast();
                     for (int i = lastNode.children.size(); i > 1; i--) // Remove all but first child.
@@ -221,6 +229,13 @@ public class BKTree<T> extends AbstractSet<T> {
                 }
                 BKTree.this.remove(lastNode.item);
                 lastNode = null;
+                itModCount = modCount;
+            }
+
+            // Fail if the tree has been modified outside iterator.
+            private void ensureNotModified() {
+                if (itModCount != modCount)
+                    throw new ConcurrentModificationException();
             }
         };
     }
